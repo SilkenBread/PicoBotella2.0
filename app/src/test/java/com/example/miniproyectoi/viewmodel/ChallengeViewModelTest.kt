@@ -3,6 +3,7 @@ package com.example.miniproyectoi.viewmodel
 import android.app.Application
 import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.example.miniproyectoi.model.Challenge
 import com.example.miniproyectoi.respository.ChallengeRepository
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -35,21 +36,96 @@ import org.mockito.MockitoAnnotations
 
 class ChallengeViewModelTest {
 
-//    @get:Rule
-//    val rule = InstantTaskExecutorRule()
-//    private lateinit var challengeRepository: ChallengeRepository
-//    private lateinit var challengeViewModel: ChallengeViewModel
-//
-//    @Before
-//    fun setUp() {
-//        challengeRepository = mock(ChallengeRepository::class.java)
-//        challengeViewModel = ChallengeViewModel(challengeRepository)
-//    }
-//
-//
-//    @Test
-//    fun `test método getListChallenge`()= runBlocking {
-//
-//    }
+    @get:Rule
+    val rule = InstantTaskExecutorRule()
+    private lateinit var challengeRepository: ChallengeRepository
+    private lateinit var challengeViewModel: ChallengeViewModel
 
+    @Before
+    fun setUp() {
+        challengeRepository = mock(ChallengeRepository::class.java)
+        challengeViewModel = ChallengeViewModel(challengeRepository)
+    }
+
+
+    @Test
+    fun `test método guardar reto exitoso`()= runBlocking {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        val challenge = "prueba 1"
+        challengeViewModel.saveChallenge(challenge)
+        verify(challengeRepository).saveChallenge(challenge)
+
+    }
+    @Test
+    fun `test método guardar reto con error`()= runBlocking {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        val challenge = "prueba 1"
+        `when`(challengeRepository.saveChallenge(challenge)).thenThrow(RuntimeException("save failed"))
+        challengeViewModel.saveChallenge(challenge)
+        verify(challengeRepository).saveChallenge(challenge)
+
+    }
+
+    @Test
+    fun `test método actualizar reto con error`()= runBlocking {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+
+        val challenge = Challenge("1","prueba 1 actualizado")
+
+        `when`(challengeRepository.updateRepository(challenge)).thenThrow(RuntimeException("actualizacion failed"))
+
+        challengeViewModel.updateChallenge(challenge)
+
+        verify(challengeRepository).updateRepository(challenge)
+
+        assertFalse(challengeViewModel.progresState.value==true)
+
+    }
+    @Test
+    fun `test método actualizar reto valido`()= runBlocking {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+
+        val challenge = Challenge("1","prueba 1 actualizado")
+
+        `when`(challengeRepository.updateRepository(challenge)).thenReturn(Unit)
+
+        challengeViewModel.updateChallenge(challenge)
+
+        verify(challengeRepository).updateRepository(challenge)
+
+        assertFalse(challengeViewModel.progresState.value==true)
+
+    }
+    @Test
+    fun `test método eliminar reto exitoso`()= runBlocking {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+
+        val challenge = Challenge("1","prueba 1 actualizado")
+
+        `when`(challengeRepository.deleteChallenge(challenge)).thenReturn(Unit)
+
+        challengeViewModel.deleteChallenge(challenge)
+
+        verify(challengeRepository).deleteChallenge(challenge)
+
+        assertFalse(challengeViewModel.progresState.value==true)
+
+    }
+    @Test
+    fun `test método eliminar reto con error`()= runBlocking {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+
+        val challenge = Challenge("1","prueba 1 actualizado")
+
+        `when`(challengeRepository.deleteChallenge(challenge)).thenThrow(RuntimeException("eliminacion failed"))
+
+        challengeViewModel.deleteChallenge(challenge)
+
+        verify(challengeRepository).deleteChallenge(challenge)
+
+        assertFalse(challengeViewModel.progresState.value==true)
+
+    }
+
+    
 }
